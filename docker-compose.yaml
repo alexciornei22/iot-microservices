@@ -11,16 +11,33 @@ services:
     image: influxdb:2.7
     hostname: influxdb
     container_name: influxdb
+    ports:
+      - "8086:8086"
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpassword
-      - DOCKER_INFLUXDB_INIT_ORG=upb
-      - DOCKER_INFLUXDB_INIT_BUCKET=sensors
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME:-admin}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD:-adminpassword}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG:-upb}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET:-sensors}
       - DOCKER_INFLUXDB_INIT_RETENTION=0
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN:-token}
     volumes:
       - influxdb2_data:/var/lib/influxdb2
       - influxdb2_config:/etc/influxdb2
+  adapter:
+    build:
+      context: adapter
+    container_name: adapter
+    depends_on:
+      - mosquitto
+      - influxdb
+    environment:
+      - MQTT_BROKER_URL=${MQTT_BROKER_URL:-mosquitto}
+      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT:-1883}
+      - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-token}
+      - INFLUXDB_ORG=${INFLUXDB_ORG:-upb}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-sensors}
   grafana:
     image: grafana/grafana:latest
     hostname: grafana
@@ -28,8 +45,8 @@ services:
     ports:
       - "80:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=asistent
-      - GF_SECURITY_ADMIN_PASSWORD=grafanaSCD2024
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-adminpassword}
       - GF_USERS_ALLOW_SIGN_UP=false
     depends_on:
       - influxdb

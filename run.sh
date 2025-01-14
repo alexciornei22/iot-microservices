@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-export SCD_DVP=$(PWD)/mosquitto:$(PWD)/grafana/dashboards:$(PWD)/grafana/provisioning
-
-docker build ./adapter -t sensors/adapter --no-cache
+docker build ./adapter -t sensors/adapter
 
 docker swarm init
 
-docker swarm deploy -c stack.yml scd3
+docker stack deploy -c stack.yml scd3

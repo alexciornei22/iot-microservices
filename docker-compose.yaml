@@ -7,6 +7,9 @@ services:
       - "1883:1883"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - mqtt_net
+
   influxdb:
     image: influxdb:2.7
     hostname: influxdb
@@ -22,6 +25,9 @@ services:
     volumes:
       - influxdb2_data:/var/lib/influxdb2
       - influxdb2_config:/etc/influxdb2
+    networks:
+      - influxdb_net
+
   adapter:
     build:
       context: adapter
@@ -36,6 +42,10 @@ services:
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-token}
       - INFLUXDB_ORG=${INFLUXDB_ORG:-upb}
       - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-sensors}
+    networks:
+      - mqtt_net
+      - influxdb_net
+
   grafana:
     image: grafana/grafana:latest
     hostname: grafana
@@ -56,6 +66,12 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - influxdb_net
+
+networks:
+  mqtt_net:
+  influxdb_net:
 
 volumes:
   influxdb2_data:

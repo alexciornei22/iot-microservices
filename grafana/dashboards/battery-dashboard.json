@@ -1,0 +1,246 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_INFLUXDB",
+      "label": "influxdb",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "11.4.0"
+    },
+    {
+      "type": "datasource",
+      "id": "influxdb",
+      "name": "InfluxDB",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "InfluxDB",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "query": "from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BAT\")\r\n  |> aggregateWindow(every: 1s, fn: mean, createEmpty: false)\r\n  |> map(fn: (r) => ({ r with _field: r[\"station\"] + \".\" + r[\"_measurement\"] }))\r\n  |> drop(columns: [\"_start\", \"_stop\", \"location\", \"station\"])\r\n",
+          "refId": "A",
+          "datasource": "InfluxDB"
+        }
+      ],
+      "title": "Battery Percentages Graph",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "InfluxDB",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 2,
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "query": "minData = from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BAT\")\r\n  |> min()\r\n  |> map(fn: (r) => ({ r with name: r.location + \".\" + r.station }))\r\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"location\", \"station\"])\r\n\r\nmaxData = from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BAT\")\r\n  |> max()\r\n  |> map(fn: (r) => ({ r with name: r.location + \".\" + r.station }))\r\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"location\", \"station\"])\r\n\r\navgData = from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BAT\")\r\n  |> mean()\r\n  |> map(fn: (r) => ({ r with name: r.location + \".\" + r.station }))\r\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"location\", \"station\"])\r\n\r\ncurrentData = from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BAT\")\r\n  |> last()\r\n  |> map(fn: (r) => ({ r with name: r.location + \".\" + r.station }))\r\n  |> drop(columns: [\"_time\", \"_start\", \"_stop\", \"_field\", \"_measurement\", \"location\", \"station\"])\r\n\r\njoinedMinMax = join(\r\n  tables: {min: minData, max: maxData},\r\n  on: [\"name\"]\r\n)\r\n\r\njoinedMinMaxAvg = join(\r\n  tables: {minMax: joinedMinMax, avg: avgData},\r\n  on: [\"name\"]\r\n)\r\n\r\njoin(\r\n  tables: {minMaxAvg: joinedMinMaxAvg, current: currentData},\r\n  on: [\"name\"]\r\n)\r\n  |> map(fn: (r) => ({ \r\n    name: r.name,\r\n    min: r._value_min,\r\n    max: r._value_max,\r\n    avg: r._value_minMaxAvg,\r\n    current: r._value_current\r\n  }))\r\n",
+          "refId": "A",
+          "datasource": "InfluxDB"
+        }
+      ],
+      "title": "Statistic Aggregation",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "avg": 4,
+              "current": 1,
+              "max": 3,
+              "min": 2,
+              "name": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30m",
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Battery Dashboard",
+  "uid": "be9yrv95quqkgb",
+  "version": 5,
+  "weekStart": ""
+}

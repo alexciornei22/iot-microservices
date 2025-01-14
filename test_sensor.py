@@ -1,6 +1,4 @@
 import json
-import random
-import string
 from datetime import datetime as dt, UTC
 from time import sleep
 
@@ -8,7 +6,6 @@ import paho.mqtt.client as mqtt
 
 LOCATION = "UPB"
 STATION = "RPi_1"
-NR_SENSORS = 10
 
 
 class Sensor:
@@ -50,22 +47,10 @@ if __name__ == '__main__':
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     mqtt_client.connect("localhost", 1883, 60)
 
-    sensors = [
-        Sensor(
-            ''.join(random.choices(string.ascii_uppercase, k=3)),
-            ''.join(random.choices(string.ascii_uppercase, k=3)),
-            random.uniform(50, 100),
-            random.uniform(20, 30),
-            random.uniform(-1, 1),
-            random.uniform(-1, 1)
-        )
-        for _ in range(NR_SENSORS - 1)
-    ]
-    sensors.append(Sensor(LOCATION, STATION, 100.0, 25.0, -1.0, -1.0))
+    sensor = Sensor(LOCATION, STATION, 100.0, 25.0, -1.0, -1.0)
 
     while True:
-        for sensor in sensors:
-            mqtt_client.publish(f"{sensor.location}/{sensor.station}", sensor.to_json())
-            sensor.update()
+        mqtt_client.publish(f"{sensor.location}/{sensor.station}", sensor.to_json())
+        sensor.update()
 
         sleep(1)

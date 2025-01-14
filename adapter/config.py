@@ -7,3 +7,5 @@ INFLUXDB_URL = os.environ.get("INFLUXDB_URL", "http://influxdb:8086")
 INFLUXDB_TOKEN = os.environ.get("INFLUXDB_TOKEN", "token")
 INFLUXDB_ORG = os.environ.get("INFLUXDB_ORG", "org")
 INFLUXDB_BUCKET = os.environ.get("INFLUXDB_BUCKET", "bucket")
+
+DEBUG_DATA_FLOW = os.environ.get("DEBUG_DATA_FLOW", "false").lower() == "true"

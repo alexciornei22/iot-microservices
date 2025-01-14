@@ -52,6 +52,7 @@ services:
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-token}
       - INFLUXDB_ORG=${INFLUXDB_ORG:-upb}
       - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-sensors}
+      - DEBUG_DATA_FLOW=${DEBUG_DATA_FLOW:-true}
     networks:
       - mqtt_net
       - influxdb_net
